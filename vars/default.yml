@@ -1,0 +1,13 @@
+#MySQL Settings
+mysql_socket: "/var/run/mysqld/mysqld.sock"
+mysql_root_password: "vagrant"
+mysql_db: "wordpress_db"
+mysql_user: "wordpress_user"
+mysql_password: "vagrant"
+
+# HTTP Settings 
+#/var/www/ + http_DocumentRoot
+http_DocumentRoot: "wordpress"
+http_host: "localhost"
+http_conf: "{{ http_DocumentRoot }}.conf"
+http_port: "80"

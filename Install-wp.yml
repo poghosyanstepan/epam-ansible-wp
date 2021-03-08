@@ -1,0 +1,35 @@
+---
+  - hosts: all
+    become: true 
+    vars_files:
+      - vars/default.yml
+
+    tasks:
+      - name: 1 - sudo apt update
+        ansible.builtin.apt: name=aptitude update_cache=yes state=latest force_apt_get=yes
+
+        # sudo apt install apache2 php libapache2-mod-php mariadb-server mariadb-client php-mysql
+        # + 'python3-pymysql', for community.mysql.mysql_db and community.mysql.mysql_user
+      - name: 2 - Install LAMP Packages
+        ansible.builtin.apt: name={{ item }} update_cache=yes state=latest
+        loop: [ 'apache2', 'php', 'libapache2-mod-php', 'mariadb-server', 'mariadb-client', 'php-mysql', 'python3-pymysql' ]
+        
+        # Configure MySQL
+      - include_tasks: tasks/mysql.yml 
+
+        # Configure Apache
+      - include_tasks: tasks/apache.yml
+
+        # Download and install WordPress
+      - include_tasks: tasks/wordpress.yml  
+
+    handlers:
+      - name: Reload Apache
+        service:
+          name: apache2
+          state: reloaded
+
+      - name: Restart Apache
+        service:
+          name: apache2
+          state: restarted

@@ -1,0 +1,89 @@
+---
+  # $ sudo mysql_secure_installation
+  # MySQL Configuration
+  # # This command will exit non-zero when the root password was set previously
+  # - name: Check if root password is unset
+  #   shell: >
+  #     mysql -u root
+  #     -p'{{ mysql_root_password }}'
+  #     -h localhost
+  #     -S {{ mysql_socket }}
+  #     -e "quit"
+  #   changed_when: false
+  #   ignore_errors: true
+  #   register: root_pwd_check
+
+  - name: Set the root password for the first time (root@localhost)
+    community.mysql.mysql_user:
+      name: root
+      password: "{{ mysql_root_password }}"
+      login_unix_socket: "{{ mysql_socket }}"
+      check_implicit_admin: true
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+    #when: root_pwd_check.rc != 0  
+
+  # - name: Create .my.cnf
+  #   template:
+  #    src: "client.my.cnf.j2"
+  #    dest: "/root/.my.cnf"
+  #    owner: root
+  #    group: root
+  #    mode: 0600
+
+  - name: Remove all anonymous user accounts
+    community.mysql.mysql_user:
+      name: ''
+      host_all: yes
+      state: absent
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+
+  - name: Secures the MySQL root user  update mysql root password for all root accounts
+    community.mysql.mysql_user: 
+      user: "root" 
+      password: "" 
+      host: "{{item}}" 
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+      login_unix_socket: "{{ mysql_socket }}"
+      state: present
+    with_items:
+      - 127.0.0.1
+      - localhost
+      - ::1
+      - "{{ ansible_hostname }}"
+  #    - ""
+  #  when: root_pwd_check.rc == 0
+
+  - name: Remove the MySQL test database
+    community.mysql.mysql_db:
+      name: test
+      state: absent
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+
+  - name: remove remote root
+    community.mysql.mysql_query:
+      query:
+        - DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1', "{{ ansible_hostname }}")
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+      login_unix_socket: "{{ mysql_socket | default(omit) }}"
+
+    # Create a database for WordPress
+  - name: "Creates database for WordPress: {{ mysql_db }}"
+    community.mysql.mysql_db:
+      name: "{{ mysql_db }}"
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+
+  - name: "Create MySQL user for WordPress: {{ mysql_user }}"
+    community.mysql.mysql_user:
+      name: "{{ mysql_user }}"
+      password: "{{ mysql_password }}"
+      priv: "{{ mysql_db }}.*:ALL"
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"

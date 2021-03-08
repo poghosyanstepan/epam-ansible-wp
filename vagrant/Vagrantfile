@@ -1,0 +1,43 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+#~/vagrant/docercompose$
+
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
+# List plugins dependencies
+
+
+Vagrant.configure("2") do |config|
+
+
+config.vm.box = "generic/ubuntu2004"
+config.vm.hostname = "vgepamtestubuntu2004"
+config.vm.network "private_network", name: "vboxnet0", ip: "192.168.5.106"
+#config.vm.synced_folder ".", "/vagrant"
+#config.vm.synced_folder «../data», «/vagrant_data»
+
+
+config.ssh.forward_agent = true
+  config.vm.provider "virtualbox" do |v|
+    v.name = "vgepamtestubuntu2004"
+   # v.gui = true
+    v.memory = 2048
+    v.cpus = 2
+  end
+
+config.vm.provision "file", source: "~/.ssh/sp_rsa.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+#config.vm.provision :shell, inline: apt-get update
+#config.vm.provision :docker
+#config.vm.provision :docker_login, username: «», email: «», password: «»
+#config.vm.provision :docker_compose,
+#compose_version: «1.21.0»,
+# executable: «/home/core/docker-compose», ## Specifying ‘executable’ option to avoid CoreOS restriction
+#yml: "/vagrant/docker-compose.yml",
+#rebuild: true,
+#run: "always"
+#config.vm.provision :docker_compose, yml: «/vagrant/docker-compose.yml», rebuild: true, run: «always»
+#config.vm.network :private_network, ip: "192.168.5.36"
+#config.vm.network "public_network", ip: "10.249.248.69"
+
+end

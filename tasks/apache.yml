@@ -1,0 +1,34 @@
+---
+  - name: Create document root
+    ansible.builtin.file:
+      path: "/var/www/{{ http_DocumentRoot }}"
+      state: directory
+      owner: "www-data"
+      group: "www-data"
+      mode: '0755'
+
+  - name: Set up Apache VirtualHost
+    ansible.builtin.template:
+      src: "templates/apache.conf.j2"
+      dest: "/etc/apache2/sites-available/{{ http_conf }}"
+    notify: Reload Apache
+
+  - name: Enable rewrite module
+    community.general.apache2_module: 
+      name: rewrite 
+      state: present
+    notify: Reload Apache
+
+  - name: "Enable new site: {{ http_conf }}"
+    ansible.builtin.shell: /usr/sbin/a2ensite {{ http_conf }}
+    notify: Reload Apache
+
+
+  - name: Disable default Apache site
+    ansible.builtin.shell: /usr/sbin/a2dissite 000-default.conf
+    notify: Restart Apache
+
+  - name: Remove wordpress.tar.gz
+    ansible.builtin.file: 
+      path: "/tmp/wordpress.tar.gz"
+      state: absent
