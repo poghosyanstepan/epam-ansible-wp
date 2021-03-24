@@ -1,7 +1,7 @@
 # epam-ansible-wp
 Install wordpress Ansible playbook
 Instractions https://linuxconfig.org/ubuntu-20-04-wordpress-with-apache-installation
-#
+#1
 
 ## Աշխատանք 
 cd /To/git/epam-ansible-wp
